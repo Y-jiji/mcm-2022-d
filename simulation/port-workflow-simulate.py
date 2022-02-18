@@ -1,84 +1,134 @@
-from re import L
-from typing_extensions import Self
-from typing import Optional
-import simpy
+from matplotlib import container
+from simpy import *
 
 
-class Carryer(object):
-    def __init__(self,
-                 env: simpy.Environment,
-                 idx: str,
-                 container_list=list()) -> None:
-        self.container_list = container_list
-        self.idx = idx
-        self.env = env
+class Storage(object):
+    def __init__(self, xyz_range, environ):
+        self.grid = dict()
+        self.rvs_grid = dict()  # reversed query grid
+        self.xyz_range = xyz_range
+        self.environ = environ
+        self.lock = dict()
+        for x, y, z in xyz_range:
+            # initialize everything empty
+            self.grid[(x, y, z)] = None
+            # for every (x, y) there should be only one and only one vehicle acting on it
+            self.lock[(x, y)] = None
 
-    def remove_container(self):
-        pass
+    def suspend_until_free(self, x, y):
+        if self.lock[(x, y)] is not None:
+            yield self.lock[(x, y)]
 
-    def add_container(self):
-        pass
+    def is_boundary(self, x, y, z):
+        return (
+            self.grid[(x + 1, y + 1, z)] != None
+            or
+            self.grid[(x + 1, y - 1, z)] != None
+            or
+            self.grid[(x - 1, y + 1, z)] != None
+            or
+            self.grid[(x - 1, y + 1, z)] != None
+        )
+
+    def check_unload_container_param(self, unload_time, x, y, z, from_above):
+        assert self.grid[(x, y, z + 1)] == None, \
+            'trying to unload a container from bottom'
+        assert self.grid[(x, y, z)] != None, \
+            'trying to unload a container that doesn\'t exist'
+        assert (x, y, z) in self.xyz_range, \
+            f'(x={x}, y={y}, z={z}): out of range'
+        if not from_above:
+            assert self.is_boundary(x, y, z), \
+                f'(x={x}, y={y}, z={z}): too deep'
+
+    def unload_container(self, unload_time, x, y, z, from_above=False):
+        # multiple locks, since many vechicle can work on it
+        self.suspend_until_free(x, y)
+        self.check_unload_container_param(unload_time, x, y, z, from_above)
+        # get a lock
+        self.lock[(x, y)] = self.environ.event()
+        # container unloading time
+        yield self.envrion.timeout(unload_time)
+        # remove container
+        self.grid[(x, y, z)] = None
+        # release a lock
+        self.lock[(x, y)].succeed()
+
+    def load_container(self, load_time, x, y, z, container):
+        # multiple locks, since many vechicle can work on it
+        self.suspend_until_free(x, y)
+        # TODO: should have some assertion here
+        # get a lock
+        self.lock[(x, y)] = self.environ.event()
+        # container unloading time
+        yield self.envrion.timeout(load_time)
+        # add container to grid
+        self.grid[(x, y, z)] = container
+        # release a lock
+        self.lock[(x, y)].succeed()
+
+
+class Vehicle(object):
+    def __init__(self, move_speed, buffer_size, environ):
+        self.move_speed = move_speed
+        self.buffer = [None] * buffer_size
+        self.environ = environ
+
+    def suspend_until_free(self):
+        if self.lock is not None:
+            yield self.lock
+
+    def get_empty_slot(self):
+        # get any empty slot to put container
+        for i, slot_content in enumerate(self.buffer):
+            if slot_content == None:
+                return i
+
+    def move(self, dist):
+        self.suspend_until_free()
+        # get a lock
+        self.lock = self.environ.event()
+        # vehicle moving time
+        yield self.environ.timeout(dist / self.move_speed)
+        # release the lock
+        self.lock.succeed()
+
+    def load_container(self, load_time, slot, container, src, **kwargs):
+        assert self.buffer[slot] is None, 'Load a container to none empty slot'
+        self.suspend_until_free()
+        # get a lock
+        self.lock = self.environ.event()
+        # unload container from source
+        src.unload_container(**kwargs)
+        # container loading time
+        yield self.environ.timeout(load_time)
+        # add container to buffer
+        self.buffer[slot] = container
+        # release the lock
+        self.lock.succeed()
+
+    def unload_container(self, unload_time, slot):
+        # get a lock
+        self.lock = self.environ.event()
+        self.suspend_until_free()
+        # container unloading time
+        yield self.environ.timeout(unload_time)
+        # remove container from buffer
+        self.buffer[slot] = None
+        # release the lock
+        self.lock.succeed()
 
 
 class Container(object):
-    def __init__(self,
-                 env: simpy.Environment,
-                 idx: str,
-                 carryer: Carryer,
-                 container_above=None):
-        self.env = env
-        self.idx = idx
-        self.container_above = container_above
-        self.carryer = carryer
-
-    def add_container_above(self, container: Self):
-        # 如果上面已经有箱子, 那么不能再叠
-        assert self.container_above is None, 'There is already a container above'
-        # 否则设置将箱子叠放在这个箱子上
-        self.container_above = container
-        # 设置上面一个箱子的拿起事件
-        self.container_above.left = self.env.event()
-
-    def get_top(self):
-        # 获取最上面的箱子
-        if self.container_above is None:
-            return self
-        return self.container_above.get_top()
-
-    def move(self, carryer: Carryer):
-        # 如果上面有一个箱子, 等待上面箱子的拿起事件, 此时上面没有箱子
-        if self.container_above is not None:
-            yield self.container_above.left
-            self.container_above = None
-        # 让当前carryer拿出这个箱子
-        yield self.carryer.remove_container(self)
-        # 让下一个carryer接过这个箱子
-        yield self.carryer.add_container(self)
-        # 如果下面有箱子, 激活当前箱子的拿起事件
-        if self.left is not None:
-            self.left.succeed()
+    def __init__(self, index):
+        self.index = index
+        pass
 
 
-class Ship(Carryer):
-    def __init__(self,
-                 env: simpy.Environment,
-                 idx: str,
-                 container_list=list()):
-        super().__init__(env, idx, container_list)
-
-    def remove_container(self):
-        yield self.env.timeout(0.0)
-
-    def add_container(self):
-        yield self.env.timeout(0.0)
+class Custom(object):
+    def __init__(self):
+        pass
 
 
-class GantryCrane(Carryer):
-    def __init__(self,
-                 env: simpy.Environment,
-                 idx: str,
-                 container_list=list()) -> None:
-        super().__init__(env, idx, container_list)
-    
-    def remove_container(self):
-        return super().remove_container()
+if __name__ == '__main__':
+    pass
