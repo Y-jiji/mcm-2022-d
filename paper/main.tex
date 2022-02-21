@@ -1,0 +1,93 @@
+\documentclass[12pt]{article}
+
+% Language setting
+% Replace `english' with e.g. `spanish' to change the document language
+\usepackage[english]{babel}
+
+% Set page size and margins
+% Replace `letterpaper' with`a4paper' for UK/EU standard size
+\usepackage[letterpaper,left=1in,right=0.75in,top=1in,bottom=1in,marginparwidth=1.75cm]{geometry}
+\usepackage{indentfirst}
+
+% Useful packages
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+
+\title{Your Paper}
+\author{You}
+
+\newcommand{\Problem}{D}
+\newcommand{\Team}{2220169}
+
+\begin{document}
+
+\thispagestyle{empty}
+\vspace*{-16ex}
+\centerline{\begin{tabular}{*3{c}}
+	\parbox[t]{0.3\linewidth}{\begin{center}\textbf{Problem Chosen}\\ \Large \textcolor{red}{\Problem}\end{center}}
+	& \parbox[t]{0.3\linewidth}{\begin{center}\textbf{2022\\ MCM/ICM\\ Summary Sheet}\end{center}}
+	& \parbox[t]{0.3\linewidth}{\begin{center}\textbf{Team Control Number}\\ \Large \textcolor{red}{\Team}\end{center}}	\\
+	\hline
+\end{tabular}}
+
+\tableofcontents
+
+\pagestyle{fancy}
+
+\newpage
+
+\lhead{Team \# 2220169}
+\rhead{Page \thepage\ }
+
+\section{Introduction}
+\subsection{Background}
+Since the economic globalization and rapid growth of information technology, data is continuously generated within the international logistics industry. The value of data is growing and efficient use of data is facing more challenges. Proper data management and analytics system propose a scientific data strategy, effectively use data, and ensure data quality and security. It helps rationally allocate human, material, and financial resources, improve the efficiency of business operations and attract potential customers. 
+
+In large-scale cargo transportation scenarios such as port transportation, there are features such as large volume and heavyweight of cargo, slow speed of vehicles, and poor flexibility. Therefore, the selection and scheduling of workers, the architecture and optimization of technology platforms, and the level of data governance process all affect the service quality and efficiency of seaport transportation companies to a large extent.
+
+\subsection{Problem Restatement}
+Due to the request of Intercontinental Cargo Moving Corporation, we need to address:
+\begin{itemize}
+    \item Measure the current data and analytics ( D\&A ) system maturity level
+    \item Provide ways to optimize the current system, balance operating costs, maximize the level and operational efficiency of manpower, information systems, and operation process
+    \item Identify the metrics that determine the efficiency of the system
+    \item Analyze the application of our model to different port transportation and other industry (such as truck companies)
+\end{itemize}
+
+\section {latex usage}
+Your introduction goes here! Simply start writing your document and use the Recompile button to view the updated PDF preview. Examples of commonly used commands and features are listed below, to help you get started.
+
+Once you're familiar with the editor, you can find various project setting in the Overleaf menu, accessed via the button in the very top left of the editor. To view tutorials, user guides, and further documentation, please visit our \href{https://www.overleaf.com/learn}{help library}, or head to our plans page to \href{https://www.overleaf.com/user/subscription/plans}{choose your plan}.
+
+\subsection{How to change the margins and paper size}
+
+Usually the template you're using will have the page margins and paper size set correctly for that use-case. For example, if you're using a journal article template provided by the journal publisher, that template will be formatted according to their requirements. In these cases, it's best not to alter the margins directly.
+
+If however you're using a more general template, such as this one, and would like to alter the margins, a common way to do so is via the geometry package. You can find the geometry package loaded in the preamble at the top of this example file, and if you'd like to learn more about how to adjust the settings, please visit this help article on \href{https://www.overleaf.com/learn/latex/page_size_and_margins}{page size and margins}.
+
+\subsection{How to change the document language and spell check settings}
+
+Overleaf supports many different languages, including multiple different languages within one document. 
+
+To configure the document language, simply edit the option provided to the babel package in the preamble at the top of this example project. To learn more about the different options, please visit this help article on \href{https://www.overleaf.com/learn/latex/International_language_support}{international language support}.
+
+To change the spell check language, simply open the Overleaf menu at the top left of the editor window, scroll down to the spell check setting, and adjust accordingly.
+
+\subsection{How to add Citations and a References List}
+
+You can simply upload a \verb|.bib| file containing your BibTeX entries, created with a tool such as JabRef. You can then cite entries from it, like this: \cite{greenwade93}. Just remember to specify a bibliography style, as well as the filename of the \verb|.bib|. You can find a \href{https://www.overleaf.com/help/97-how-to-include-a-bibliography-using-bibtex}{video tutorial here} to learn more about BibTeX.
+
+If you have an \href{https://www.overleaf.com/user/subscription/plans}{upgraded account}, you can also import your Mendeley or Zotero library directly as a \verb|.bib| file, via the upload menu in the file-tree.
+
+\subsection{Good luck!}
+
+We hope you find Overleaf useful, and do take a look at our \href{https://www.overleaf.com/learn}{help library} for more tutorials and user guides! Please also let us know if you have any feedback using the Contact Us link at the bottom of the Overleaf menu --- or use the contact form at \url{https://www.overleaf.com/contact}.
+
+\section{Conclusion}
+
+\bibliographystyle{alpha}
+\bibliography{reference}
+
+\end{document}
